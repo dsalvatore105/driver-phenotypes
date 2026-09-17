@@ -1,0 +1,8 @@
+data/
+.env
+.env.local
+*.pem
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
