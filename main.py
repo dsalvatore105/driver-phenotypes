@@ -9,11 +9,11 @@ def get_Study_Name():
     return study_name
 
 def get_Participant_ID():
-    participant_id = input("Enter the participant ID: ")
+    participant_id = input("Enter the participant ID: ").replace(" ", "")
     return participant_id
 
 def get_Drive():
-    drive_path = input("Enter the drive number: ")
+    drive_path = input("Enter the drive number: ").replace(" ", "")
     return drive_path
 
 def load_data(names, plt_files, file):
@@ -23,7 +23,7 @@ def load_data(names, plt_files, file):
         names.append(file.stem)
 
         mask = df.loc[:,11] != df.loc[:,11].shift(1) # Only including rows between first gear change and last gear change
-        mask.iloc[0] = False 
+        mask.iloc[0] = False                         # Ignoring the first frame
         gear_change_indices = df.index[mask]
 
         if len(gear_change_indices) >= 2:
@@ -45,7 +45,7 @@ def calc_runtime(frame_number):
 
     print(f"Run time is {minute} minutes and {second} seconds.")
 
-# Right now, we have 2 arrays storing the loaded files, names which is just storing the file names, and plt files is storing all of the actual dataframes.
+# Right now, we have 2 arrays storing the loaded data, names which is just storing the file names, and plt_files is storing all of the actual dataframes.
 # It is currently filtering the dataframes to only have the rows inbewteen the first gear change and the last gear change.
 # I included the timer function while loading the files to verify if the files being loaded look correct at a quick glance. 
 # If we know it's working fine, we can comment out the timer function to lessen the processing load.
@@ -61,7 +61,7 @@ def main():
         print("4: Load all drives")
         print("Exit: To Close the Program\n")
 
-        choice = input("Enter your choice: ")
+        choice = input("Enter your choice: ").lower().replace(" ", "")
 
         match choice:
             case '1':
@@ -123,6 +123,9 @@ def main():
                 for n in names:
                     print(n, end=" \n")
                 break
+
+            case _:
+                print("Invalid choice. Please try again.")
 
 if __name__ == "__main__":
     main()
