@@ -16,6 +16,12 @@ def get_Drive():
     drive_path = input("Enter the drive number: ")
     return drive_path
 
+
+# Right now, we have 2 arrays storing the loaded files, names which is just storing the file names, and plt files is storing all of the actual dataframes.
+# It is currently filtering the dataframes to only have the rows inbewteen the first gear change and the last gear change.
+# I included the timer print statement while loading the files to verify if the files being loaded look correct at a quick glance. 
+# If we know it's working fine, we can comment out the timer statements to lessen the processing load.
+
 def main():
     names = []
     plt_files = []
@@ -42,12 +48,23 @@ def main():
                         print(f"Drive {data_path.stem} has already been loaded")
                         continue
 
-                    print(f"Loading: {data_path}\n")
+                    print(f"Loading: {data_path}", end=" ")
 
                     try:
                         df = pd.read_csv(data_path, header=None, sep=r'\s+')
                         names.append(data_path.stem)
-                        plt_files.append(df)
+
+                        mask = df.loc[:,11] != df.loc[:,11].shift(1) # Only including rows between first gear change and last gear change
+                        rows = df[mask]
+
+                        plt_files.append(rows)
+
+                        frame_time = rows.iloc[-1, 53] - rows.iloc[1,53]
+                        minute = (frame_time // 60) // 60
+                        second = ((frame_time % 60) % 60) % 60
+
+                        print(f"Run time is {minute} minutes and {second} seconds.") 
+
                     except Exception as e:
                         print(f"Error loading {data_path}: {e}\n")
 
@@ -66,10 +83,21 @@ def main():
                         print(f"Drive {file.stem} has already been loaded")
                         continue
                     try:
-                        print(f"Loading {file}")
+                        print(f"Loading {file}", end=" ")
                         df = pd.read_csv(file, header=None, sep=r'\s+')
                         names.append(file.stem)
-                        plt_files.append(df)
+
+                        mask = df.loc[:,11] != df.loc[:,11].shift(1) # Only including rows between first gear change and last gear change
+                        rows = df[mask]
+
+                        plt_files.append(rows)
+
+                        frame_time = rows.iloc[-1, 53] - rows.iloc[1,53]
+                        minute = (frame_time // 60) // 60
+                        second = ((frame_time % 60) % 60) % 60
+
+                        print(f"Run time is {minute} minutes and {second} seconds.")
+
                     except Exception as e:
                         print(f"Error loading {file}: {e}\n")
                         continue
@@ -86,10 +114,21 @@ def main():
                         continue
 
                     try:
-                        print(f"Loading {file}")
+                        print(f"Loading {file}", end=" ")
                         df = pd.read_csv(file, header=None, sep=r'\s+')
                         names.append(file.stem)
-                        plt_files.append(df)
+
+                        mask = df.loc[:,11] != df.loc[:,11].shift(1) # Only including rows between first gear change and last gear change
+                        rows = df[mask]
+
+                        plt_files.append(rows)
+
+                        frame_time = rows.iloc[-1, 53] - rows.iloc[1,53]
+                        minute = (frame_time // 60) // 60
+                        second = ((frame_time % 60) % 60) % 60
+
+                        print(f"Run time is {minute} minutes and {second} seconds.")
+
                     except Exception as e:
                         print(f"Error loading {file}: {e}\n")
                         continue
@@ -105,11 +144,21 @@ def main():
                         continue
 
                     try:
-                        print(f"Loading {file}")
+                        print(f"Loading {file}", end=" ")
                         df = pd.read_csv(file, header=None, sep=r'\s+')
                         names.append(file.stem)
-                        plt_files.append(df)
 
+                        mask = df.loc[:,11] != df.loc[:,11].shift(1) # Only including rows between first gear change and last gear change
+                        rows = df[mask]
+
+                        plt_files.append(rows)
+
+                        frame_time = rows.iloc[-1, 53] - rows.iloc[1,53]
+                        minute = (frame_time // 60) // 60
+                        second = ((frame_time % 60) % 60) % 60
+
+                        print(f"Run time is {minute} minutes and {second} seconds.")
+                        
                     except Exception as e:
                         print(f"Error loading {file}: {e}\n")
                         continue
