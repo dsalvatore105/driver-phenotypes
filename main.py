@@ -2,19 +2,20 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import sklearn
+import comparisons
 from pathlib import Path
 
 def get_Study_Name():
-    study_name = input("Enter the study name: ").upper().replace(" ", "")
+    study_name = input("Enter the study name: ").upper().strip()
     return study_name
 
 def get_Participant_ID():
-    participant_id = input("Enter the participant ID: ").replace(" ", "")
+    participant_id = input("Enter the participant ID: ").strip()
     return participant_id
 
 def get_Drive():
-    drive_path = input("Enter the drive number: ").replace(" ", "")
-    return drive_path
+    drive_num = input("Enter the drive number: ").strip()
+    return drive_num
 
 def load_data(names, plt_files, file):
     try:
@@ -61,7 +62,7 @@ def main():
         print("4: Load all drives")
         print("Exit: To Close the Program\n")
 
-        choice = input("Enter your choice: ").lower().replace(" ", "")
+        choice = input("Enter your choice: ").lower().strip()
 
         match choice:
             case '1':
@@ -123,6 +124,12 @@ def main():
                 for n in names:
                     print(n, end=" \n")
                 break
+
+            case '5':
+                abs_lane_dev = comparisons.Absolute_lane_deviation(plt_files)
+                Speed_limit_adhearance = comparisons.Average_speed_limit_adhearance(plt_files)
+                reaction_time = comparisons.Average_reaction_time(plt_files)
+                continue
 
             case _:
                 print("Invalid choice. Please try again.")
