@@ -41,5 +41,8 @@ def Collision_Count(df):
     return df["Collision"].sum() # Total Collision Count
 
 def Car_distance_time(df):
-    temp_df = df[df["Headway_Time"] <= 5] # Search for rows where Headway Time is less than or equal to 5 seconds. 3 seconds is the safe distance, but some people would go above that.
+    temp_df = df[df["Headway_Time"] <= 5] # Search for rows where Headway Time is less than or equal to 5 seconds. 3 seconds is the safe following distance, but some people would go above that.
     return temp_df["Headway_Time"].mean() 
+
+def Blinker_Wheel_turn(df):
+     temp_df = df[df["Left_Blinker"] > 0 | df["Right_Blinker"] > 0] # Search for rows where either the left or right blinker is on
