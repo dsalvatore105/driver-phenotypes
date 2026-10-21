@@ -20,11 +20,11 @@ def get_Drive():
 def load_data(names, plt_files, file):
     try:
         print(f"Loading {file} |", end=" ")
-        df = pd.read_csv(file, header=None, sep=r'\s+', usecols=[3,4,*range(7,23),36,37,38,42,53,54]).rename(
+        df = pd.read_csv(file, header=None, sep=r'\s+', usecols=[3,4,*range(7,23),36,37,38,42,44,53,54]).rename(
             columns={3: "Left_Blinker", 4: "Right_Blinker", 7: "Acceleration", 8: "Lateral_Acceleration", 9: "Accelerator_Pedal_Position", 10: "Brake_Pedal_Force",
                      11: "Gear", 12: "Heading", 13: "Heading_Error", 14: "Headway_Distance", 15: "Headway_Time", 16: "Lane_Number", 17: "Lane_Offset", 18: "Road_Offset",
                      19: "Steering_Wheel_Position", 20: "Tailway_Distance", 21: "Tailway_Time:", 22: "Velocity", 36: "Speed_Limit", 37: "Signs", 38: "Speed_Check",
-                     42: "Reaction_Time", 53: "Frame_Number", 54: "Collision"})
+                     42: "Reaction_Time", 44: "Intersections", 53: "Frame_Number", 54: "Collision"})
         names.append(file.stem)
 
         mask = df["Gear"] != df["Gear"].shift(1) # Only including rows between first gear change and last gear change
@@ -64,6 +64,7 @@ def main():
         print("2: Load all drives of a participant")
         print("3: Load all drives in a study")
         print("4: Load all drives")
+        print("5: Calculate Comparisons")
         print("Exit: To Close the Program\n")
 
         choice = input("Enter your choice: ").lower().strip()
@@ -124,7 +125,7 @@ def main():
 
 
             case 'exit':
-                print(f" {len(plt_files)} Files loaded:")
+                print(f"{len(plt_files)} Files loaded:")
                 for n in names:
                     print(n, end=" \n")
                 break
