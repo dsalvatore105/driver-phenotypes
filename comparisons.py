@@ -20,9 +20,9 @@ def calculate_comparisons(plt_files):
 
             headway_times.append(Car_distance_time(df)) # Average Headway Time
 
-            blinker_wheel.append(Blinker_wheel_turn(df))
+            blinker_wheel.append(Blinker_wheel_turn(df)) # Score of correct wheel movement when blinker is on
 
-            brake_force.append(Average_Brake_Force(df))
+            brake_force.append(Average_Brake_Force(df)) # Avg brake force, only when braking throughout drive
 
         #print(f"Absolute Lane Deviation: {abs_lane_dev}\n")
         #print(f"Average Speed Limit Adhearance: {speed_means}\n")   
@@ -53,13 +53,16 @@ def Car_distance_time(df):
     return temp_df["Headway_Time"].mean() 
 
 def Blinker_wheel_turn(df):
+     # Score goes up when Left Blinker is on and wheel values go negative and vice versa for right.
+     # I didn't include score loss when not turning because turning usually occurs towards the end of the blinker.
+
      score = 0
-     left_positive =((df["Left_Blinker"] > 0) & (df["Steering_Wheel_Position"] < -0.5) )
+     left_positive =((df["Left_Blinker"] > 0) & (df["Steering_Wheel_Position"] < -0.5) ) 
      right_postive = ((df["Right_Blinker"] > 0) & (df["Steering_Wheel_Position"] > 0.5))
 
      score =+ (left_positive.sum() + right_postive.sum()) 
      return score
           
 def Average_Brake_Force(df):
-     temp_df = df[df["Brake_Pedal_Force"] > 0]
+     temp_df = df[df["Brake_Pedal_Force"] > 0] # Only including when the participant is braking.
      return temp_df["Brake_Pedal_Force"].mean()
