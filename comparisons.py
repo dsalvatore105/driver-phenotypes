@@ -4,6 +4,8 @@ def calculate_comparisons(plt_files):
         reaction_times = []
         collision_counts = []
         headway_times = []
+        blinker_wheel = []
+        brake_force = []
 
         print(f"Calculating Comparisons for {len(plt_files)} files...\n")
 
@@ -18,11 +20,17 @@ def calculate_comparisons(plt_files):
 
             headway_times.append(Car_distance_time(df)) # Average Headway Time
 
+            blinker_wheel.append(Blinker_wheel_turn(df))
+
+            brake_force.append(Average_Brake_Force(df))
+
         #print(f"Absolute Lane Deviation: {abs_lane_dev}\n")
         #print(f"Average Speed Limit Adhearance: {speed_means}\n")   
         #print(f"Average Reaction Time: {reaction_times}\n")
         #print(f"Total Collision Count: {collision_counts}\n")
         #print(f"Average Headway Time: {headway_times}\n")
+        #print(f"Blinker Score: {blinker_wheel}\n")
+        #print(f"Average Brake Pressure: {brake_force}\n")
 
 
         return abs_lane_dev, speed_means, reaction_times, collision_counts, headway_times
@@ -44,5 +52,14 @@ def Car_distance_time(df):
     temp_df = df[df["Headway_Time"] <= 5] # Search for rows where Headway Time is less than or equal to 5 seconds. 3 seconds is the safe following distance, but some people would go above that.
     return temp_df["Headway_Time"].mean() 
 
-def Blinker_Wheel_turn(df):
-     temp_df = df[df["Left_Blinker"] > 0 | df["Right_Blinker"] > 0] # Search for rows where either the left or right blinker is on
+def Blinker_wheel_turn(df):
+     score = 0
+     left_positive =((df["Left_Blinker"] > 0) & (df["Steering_Wheel_Position"] < -0.5) )
+     right_postive = ((df["Right_Blinker"] > 0) & (df["Steering_Wheel_Position"] > 0.5))
+
+     score =+ (left_positive.sum() + right_postive.sum()) 
+     return score
+          
+def Average_Brake_Force(df):
+     temp_df = df[df["Brake_Pedal_Force"] > 0]
+     return temp_df["Brake_Pedal_Force"].mean()
