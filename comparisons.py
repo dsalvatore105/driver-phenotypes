@@ -74,7 +74,7 @@ def Average_brake_force(df):
      temp_df = df[df["Brake_Pedal_Force"] > 0] # Only including when the participant is braking.
      return temp_df["Brake_Pedal_Force"].mean()
 
-def Repeated_brake_score(df): # I believe through this method we should see the lower scores as more a gradual braking, while higher indicates multiple samller braking attempts.
+def Repeated_brake_score(df): # I believe through this method we should see the lower scores as more a gradual braking, while higher indicates multiple smaller braking attempts.
      signal = df["Brake_Pedal_Force"].to_numpy()
 
      peaks, _ = find_peaks(
