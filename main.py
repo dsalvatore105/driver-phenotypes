@@ -125,8 +125,8 @@ def main():
 
 
             case'3':
-
                 study_name = get_Study_Name()
+                
                 if study_name == "":
                     print(f"\nEmpty entry.\n")
                 else:
