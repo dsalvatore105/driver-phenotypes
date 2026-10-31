@@ -24,7 +24,6 @@ def get_base_drive_name(file):
 
     return f"{prefix}_{number[0]}"
 
-
 def load_data(names, plt_files, file):
     try:
         print(f"Loading {file} |", end=" ")
@@ -142,7 +141,6 @@ def main():
                         load_data(names, plt_files, file)
 
 
-
             case '4':
                 data_dir = Path("data/")
 
@@ -160,9 +158,11 @@ def main():
                     print(n, end=" \n")
                 break
 
+
             case '5':
                 comparisons.calculate_comparisons(plt_files)
                 continue
+
 
             case _:
                 print("Invalid choice. Please try again.")
