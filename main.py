@@ -17,6 +17,13 @@ def get_Drive():
     drive_num = input("Enter the drive number: ").strip()
     return drive_num
 
+def get_base_drive_name(file):
+    name = file.stem
+
+    prefix, number = name.rsplit("_", 1)
+
+    return f"{prefix}_{number[0]}"
+
 def load_data(names, plt_files, file):
     try:
         print(f"Loading {file} |", end=" ")
@@ -25,21 +32,31 @@ def load_data(names, plt_files, file):
                      11: "Gear", 12: "Heading", 13: "Heading_Error", 14: "Headway_Distance", 15: "Headway_Time", 16: "Lane_Number", 17: "Lane_Offset", 18: "Road_Offset",
                      19: "Steering_Wheel_Position", 20: "Tailway_Distance", 21: "Tailway_Time:", 22: "Velocity", 36: "Speed_Limit", 37: "Signs", 38: "Speed_Check",
                      42: "Reaction_Time", 44: "Intersections", 53: "Frame_Number", 54: "Collision"})
-        names.append(file.stem)
 
         mask = df["Gear"] != df["Gear"].shift(1) # Only including rows between first gear change and last gear change
         mask.iloc[0] = False                         # Ignoring the first frame
         gear_change_indices = df.index[mask]
-        
 
         if len(gear_change_indices) >= 2:
             first_gear_change_index = gear_change_indices[0]
-            # Change last gear because of 055_Drive_3 is abnormal.
+            # Change last gear because 055_Drive_3 is abnormal.
             last_gear_change_index = gear_change_indices[-1] if df.loc[gear_change_indices[-1], "Frame_Number"] - df.loc[gear_change_indices[0], "Frame_Number"] > 1000 else df.index[-1]
 
             #print(f"First Gear Change Index: {first_gear_change_index} | Last Gear Change Index: {last_gear_change_index} |", end=" ")
             rows = df.loc[first_gear_change_index:last_gear_change_index].copy()
-            plt_files.append(rows)
+
+            base_name = get_base_drive_name(file)
+
+            if base_name in names:
+                index = names.index(base_name)
+
+                plt_files[index] = pd.concat([plt_files[index],rows], ignore_index=True)
+
+                print(f"Conjoined with {base_name} |", end =" ")
+            else:
+                names.append(base_name)
+                plt_files.append(rows)
+
             print(f"Number of frames: {len(rows)} |", end=" ")
 
             calc_runtime(len(rows))
@@ -86,34 +103,42 @@ def main():
                         continue
 
                     load_data(names, plt_files, data_path)
+                else:
+                    print(f"\nThe Data path entered does not exist.\n")
 
 
             case '2':
                 study_name = get_Study_Name()
                 participant_id = get_Participant_ID()
 
-                data_dir = Path(f"data/{study_name}/{participant_id}")
+                if participant_id == "" or study_name == "":
+                    print(f"\nOne or more of your entries was empty.\n")
+                else:
+                    data_dir = Path(f"data/{study_name}/{participant_id}")
 
-                for file in data_dir.rglob("*.plt"):
-                    if file.stem in names:
-                        print(f"Drive {file.stem} has already been loaded")
-                        continue
+                    for file in data_dir.rglob("*.plt"):
+                        if file.stem in names:
+                            print(f"Drive {file.stem} has already been loaded")
+                            continue
                     
-                    load_data(names, plt_files, file)
+                        load_data(names, plt_files, file)
 
 
             case'3':
-
                 study_name = get_Study_Name()
-                data_dir = Path(f"data/{study_name}")
+                
+                if study_name == "":
+                    print(f"\nEmpty entry.\n")
+                else:
+                    data_dir = Path(f"data/{study_name}")
 
-                for file in data_dir.rglob("*.plt"):
-                    if file.stem in names:
-                        print(f"Drive {file.stem} has already been loaded")
-                        continue
+
+                    for file in data_dir.rglob("*.plt"):
+                        if file.stem in names:
+                            print(f"Drive {file.stem} has already been loaded")
+                            continue
                     
-                    load_data(names, plt_files, file)
-
+                        load_data(names, plt_files, file)
 
 
             case '4':
@@ -133,9 +158,11 @@ def main():
                     print(n, end=" \n")
                 break
 
+
             case '5':
                 comparisons.calculate_comparisons(plt_files)
                 continue
+
 
             case _:
                 print("Invalid choice. Please try again.")
