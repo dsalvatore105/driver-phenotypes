@@ -104,33 +104,42 @@ def main():
                         continue
 
                     load_data(names, plt_files, data_path)
+                else:
+                    print(f"\nThe Data path entered does not exist.\n")
 
 
             case '2':
                 study_name = get_Study_Name()
                 participant_id = get_Participant_ID()
 
-                data_dir = Path(f"data/{study_name}/{participant_id}")
+                if participant_id == "" or study_name == "":
+                    print(f"\nOne or more of your entries was empty.\n")
+                else:
+                    data_dir = Path(f"data/{study_name}/{participant_id}")
 
-                for file in data_dir.rglob("*.plt"):
-                    if file.stem in names:
-                        print(f"Drive {file.stem} has already been loaded")
-                        continue
+                    for file in data_dir.rglob("*.plt"):
+                        if file.stem in names:
+                            print(f"Drive {file.stem} has already been loaded")
+                            continue
                     
-                    load_data(names, plt_files, file)
+                        load_data(names, plt_files, file)
 
 
             case'3':
 
                 study_name = get_Study_Name()
-                data_dir = Path(f"data/{study_name}")
+                if study_name == "":
+                    print(f"\nEmpty entry.\n")
+                else:
+                    data_dir = Path(f"data/{study_name}")
 
-                for file in data_dir.rglob("*.plt"):
-                    if file.stem in names:
-                        print(f"Drive {file.stem} has already been loaded")
-                        continue
+
+                    for file in data_dir.rglob("*.plt"):
+                        if file.stem in names:
+                            print(f"Drive {file.stem} has already been loaded")
+                            continue
                     
-                    load_data(names, plt_files, file)
+                        load_data(names, plt_files, file)
 
 
 
