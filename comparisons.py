@@ -10,6 +10,11 @@ def calculate_comparisons(plt_files):
         blinker_wheel = []
         brake_force = []
         brake_peaks = []
+        Gas_to_brake = []
+        Turning_score = []
+        Wheel_movement_magnitude = []
+        Wheel_when_stopped = []
+        Both_pedal_pressure_score = []
 
         print(f"Calculating Comparisons for {len(plt_files)} files...\n")
 
@@ -30,6 +35,16 @@ def calculate_comparisons(plt_files):
 
             brake_peaks.append(Repeated_brake_score(df)) # Counting the number of local peaks detected in braking
 
+            #Gas_to_Brake.append(Gas_To_Brake_Time(df)) # Time spent transitioning from gas to brake
+
+            #Turning_score.append(Turning_Score(df)) # Score for correct turning behavior
+
+            Wheel_movement_magnitude.append(Wheel_Movement_Magnitude(df)) # Magnitude of steering wheel movement
+
+            Wheel_when_stopped.append(Wheel_When_Stopped(df)) # Steering wheel position when stopped
+
+            Both_pedal_pressure_score.append(Both_Pedal_Pressure_Score(df)) # Score for pressing both pedals
+
         #print(f"Absolute Lane Deviation: {abs_lane_dev}\n")
         #print(f"Average Speed Limit Adhearance: {speed_means}\n")   
         #print(f"Average Reaction Time: {reaction_times}\n")
@@ -38,6 +53,11 @@ def calculate_comparisons(plt_files):
         #print(f"Blinker Score: {blinker_wheel}\n")
         #print(f"Average Brake Pressure: {brake_force}\n")
         #print(f"Brake Peaks counts: {brake_peaks}\n")
+        #print(f"Gas to Brake Time: {Gas_To_Brake}\n")
+        #print(f"Turning Score: {Turning_Score}\n")
+        print(f"Wheel Movement Magnitude: {Wheel_movement_magnitude}\n")
+        print(f"Wheel When Stopped: {Wheel_when_stopped}\n")
+        print(f"Both Pedal Pressure Score: {Both_pedal_pressure_score}\n")
 
 
         return abs_lane_dev, speed_means, reaction_times, collision_counts, headway_times, blinker_wheel, brake_force, brake_peaks
@@ -60,27 +80,45 @@ def Car_distance_time(df):
     return temp_df["Headway_Time"].mean() 
 
 def Blinker_wheel_turn(df):
-     # Score goes up when Left Blinker is on and wheel values go negative and vice versa for right.
-     # I didn't include score loss when not turning because turning usually occurs towards the end of the blinker.
+    # Score goes up when Left Blinker is on and wheel values go negative and vice versa for right.
+    # I didn't include score loss when not turning because turning usually occurs towards the end of the blinker.
 
-     score = 0
-     left_positive =((df["Left_Blinker"] > 0) & (df["Steering_Wheel_Position"] < -0.5) ) 
-     right_postive = ((df["Right_Blinker"] > 0) & (df["Steering_Wheel_Position"] > 0.5))
+    score = 0
+    left_positive =((df["Left_Blinker"] > 0) & (df["Steering_Wheel_Position"] < -0.5)) 
+    right_postive = ((df["Right_Blinker"] > 0) & (df["Steering_Wheel_Position"] > 0.5))
 
-     score =+ (left_positive.sum() + right_postive.sum()) 
-     return score
+    score =+ (left_positive.sum() + right_postive.sum()) 
+    return score
           
 def Average_brake_force(df):
-     temp_df = df[df["Brake_Pedal_Force"] > 0] # Only including when the participant is braking.
-     return temp_df["Brake_Pedal_Force"].mean()
+    temp_df = df[df["Brake_Pedal_Force"] > 0] # Only including when the participant is braking.
+    return temp_df["Brake_Pedal_Force"].mean()
 
 def Repeated_brake_score(df): # I believe through this method we should see the lower scores as more a gradual braking, while higher indicates multiple smaller braking attempts.
-     signal = df["Brake_Pedal_Force"].to_numpy()
+    signal = df["Brake_Pedal_Force"].to_numpy()
 
-     peaks, _ = find_peaks(
-          signal,
-          prominence= 10, # Difference in score needed to count as a different peak
-          distance= 60    # How many frames are needed to seperate peaks
-     )
+    peaks, _ = find_peaks(
+        signal,
+        prominence= 10, # Difference in score needed to count as a different peak
+        distance= 60    # How many frames are needed to seperate peaks
+    )
 
-     return len(peaks)
+    return len(peaks)
+
+def Gas_To_Brake_Time(df):
+    pass
+
+def Turning_Score(df):
+    pass
+
+def Wheel_Movement_Magnitude(df):
+    return df["Steering_Wheel_Position"].diff().abs().mean()
+
+def Wheel_When_Stopped(df):
+    df_stopped = df[df["Acceleration"].abs() < 0.1] # Only including when the participant is stopped.
+    wheel_movement = df_stopped["Steering_Wheel_Position"].diff().abs().mean()
+    return wheel_movement
+
+def Both_Pedal_Pressure_Score(df):
+    df_both = df[(df["Brake_Pedal_Force"] > 0.5) & (df["Accelerator_Pedal_Position"] > 0.5)] # Only including when the participant is pressing both pedals.
+    return len(df_both)
