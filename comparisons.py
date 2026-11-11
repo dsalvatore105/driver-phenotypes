@@ -52,11 +52,11 @@ def calculate_comparisons(plt_files):
         #print(f"Blinker Score: {blinker_wheel}\n")
         #print(f"Average Brake Pressure: {brake_force}\n")
         #print(f"Brake Peaks counts: {brake_peaks}\n")
-        print(f"Gas to Brake Time: {Gas_to_brake}\n")
-        print(f"Turning Score: {Turning_score}\n")
+        #print(f"Gas to Brake Time: {Gas_to_brake}\n")
+        #print(f"Turning Score: {Turning_score}\n")
         #print(f"Wheel Movement Magnitude: {Wheel_movement_magnitude}\n")
         #print(f"Wheel When Stopped: {Wheel_when_stopped}\n")
-        print(f"Both Pedal Pressure Score: {Both_pedal_pressure_score}\n")
+        #print(f"Both Pedal Pressure Score: {Both_pedal_pressure_score}\n")
 
 
         return abs_lane_dev, speed_means, reaction_times, collision_counts, headway_times, blinker_wheel, brake_force, brake_peaks, Gas_to_brake, Turning_score, Wheel_movement_magnitude, Wheel_when_stopped, Both_pedal_pressure_score
@@ -106,7 +106,7 @@ def Repeated_brake_score(df): # I believe through this method we should see the 
 
 def Gas_To_Brake_Time(df):
     df_gas = df["Accelerator_Pedal_Position"] > 2.0 # Only including when the participant is pressing the gas pedal
-    df_brake = df["Brake_Pedal_Force"] > 0 # Only including when the participant is pressing the brake pedal
+    df_brake = df["Brake_Pedal_Force"] > 0.5 # Only including when the participant is pressing the brake pedal
 
     gas_releases = df_gas.shift(fill_value= False) & ~df_gas # When the gas pedal is released
     brake_presses = df_brake & ~df_brake.shift(fill_value= False) # When the brake pedal is pressed
@@ -128,7 +128,7 @@ def Gas_To_Brake_Time(df):
     if not transition_times:
         return 0
     
-    return sum(transition_times) / len(transition_times)
+    return sum(transition_times) / len(transition_times) # Average time spent transitioning from gas to brake
 
 def Turning_Score(df):
     df_turn = df["Steering_Wheel_Position"].abs() > 0.4 # Find turns
@@ -142,7 +142,7 @@ def Turning_Score(df):
 
     return average_turn_time # Should return the average amount of frames spent turning on turns above 0.4 radians
 
-def Wheel_Movement_Magnitude(df):
+def Wheel_Movement_Magnitude(df): # Calculates the average magnitude of steering wheel movement throughout the drive
     return df["Steering_Wheel_Position"].diff().abs().mean()
 
 def Wheel_When_Stopped(df):
@@ -151,5 +151,5 @@ def Wheel_When_Stopped(df):
     return wheel_movement
 
 def Both_Pedal_Pressure_Score(df):
-    df_both = df[(df["Brake_Pedal_Force"] > 0.5) & (df["Accelerator_Pedal_Position"] > 1.0)] # Only including when the participant is pressing both pedals
+    df_both = df[(df["Brake_Pedal_Force"] > 0.5) & (df["Accelerator_Pedal_Position"] > 2.0)] # Only including when the participant is pressing both pedals, Brake force is in newtons and Accelerator position is the angle in degrees
     return len(df_both)

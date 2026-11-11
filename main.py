@@ -27,10 +27,10 @@ def get_base_drive_name(file):
 def load_data(names, plt_files, file):
     try:
         print(f"Loading {file} |", end=" ")
-        df = pd.read_csv(file, header=None, sep=r'\s+', usecols=[3,4,7,8,9,10,11,14,15,17,19,22,36,38,42,53,54]).rename(
+        df = pd.read_csv(file, header=None, sep=r'\s+', usecols=[3,4,7,8,9,10,11,14,15,17,19,22,36,42,53,54]).rename(
             columns={3: "Left_Blinker", 4: "Right_Blinker", 7: "Acceleration", 8: "Lateral_Acceleration", 9: "Accelerator_Pedal_Position", 10: "Brake_Pedal_Force",
                      11: "Gear", 14: "Headway_Distance", 15: "Headway_Time", 17: "Lane_Offset",
-                     19: "Steering_Wheel_Position", 22: "Velocity", 36: "Speed_Limit", 38: "Speed_Check",
+                     19: "Steering_Wheel_Position", 22: "Velocity", 36: "Speed_Limit",
                      42: "Reaction_Time", 53: "Frame_Number", 54: "Collision"})
 
         mask = df["Gear"] != df["Gear"].shift(1) # Only including rows between first gear change and last gear change
@@ -90,7 +90,7 @@ def main():
         choice = input("Enter your choice: ").lower().strip()
 
         match choice:
-            case '1':
+            case '1': # Load a single drive
                 study_name = get_Study_Name()
                 participant_id = get_Participant_ID()
                 drive_path = get_Drive()
@@ -107,7 +107,7 @@ def main():
                     print(f"\nThe Data path entered does not exist.\n")
 
 
-            case '2':
+            case '2': # Load all drives of a participant
                 study_name = get_Study_Name()
                 participant_id = get_Participant_ID()
 
@@ -124,7 +124,7 @@ def main():
                         load_data(names, plt_files, file)
 
 
-            case'3':
+            case'3': # Load all drives in a study
                 study_name = get_Study_Name()
                 
                 if study_name == "":
@@ -141,7 +141,7 @@ def main():
                         load_data(names, plt_files, file)
 
 
-            case '4':
+            case '4': # Load all drives in the data folder
                 data_dir = Path("data/")
 
                 for file in data_dir.rglob("*.plt"):
