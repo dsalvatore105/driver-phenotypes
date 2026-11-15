@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sklearn
 import comparisons
+import cluster
 from pathlib import Path
 
 def get_Study_Name():
@@ -85,6 +86,7 @@ def main():
         print("3: Load all drives in a study")
         print("4: Load all drives")
         print("5: Calculate Comparisons")
+        print("6: Run Phenotype Tests")
         print("Exit: To Close the Program\n")
 
         choice = input("Enter your choice: ").lower().strip()
@@ -152,17 +154,23 @@ def main():
                     load_data(names, plt_files, file)
 
 
-            case 'exit':
-                print(f"{len(plt_files)} Files loaded:")
-                for n in names:
-                    print(n, end=" \n")
-                break
-
-
             case '5':
                 comparisons.calculate_comparisons(plt_files)
                 continue
 
+            case '6':
+                if len(plt_files) == 0:
+                    print("No files were loaded.")
+                    continue
+
+                cluster.test(names, plt_files)
+
+
+            case 'exit':
+                # print(f"{len(plt_files)} Files loaded:")
+                # for n in names:
+                #     print(n, end=" \n")
+                break
 
             case _:
                 print("Invalid choice. Please try again.")

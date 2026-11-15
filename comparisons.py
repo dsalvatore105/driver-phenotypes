@@ -30,14 +30,14 @@ def calculate_comparisons(plt_files):
 
             brake_peaks.append(Repeated_brake_score(df)) # Counting the number of local peaks detected in braking
 
-        #print(f"Absolute Lane Deviation: {abs_lane_dev}\n")
-        #print(f"Average Speed Limit Adhearance: {speed_means}\n")   
-        #print(f"Average Reaction Time: {reaction_times}\n")
-        #print(f"Total Collision Count: {collision_counts}\n")
-        #print(f"Average Headway Time: {headway_times}\n")
-        #print(f"Blinker Score: {blinker_wheel}\n")
-        #print(f"Average Brake Pressure: {brake_force}\n")
-        #print(f"Brake Peaks counts: {brake_peaks}\n")
+        # print(f"Absolute Lane Deviation: {abs_lane_dev}\n")
+        # print(f"Average Speed Limit Adhearance: {speed_means}\n")   
+        # print(f"Average Reaction Time: {reaction_times}\n")
+        # print(f"Total Collision Count: {collision_counts}\n")
+        # print(f"Average Headway Time: {headway_times}\n")
+        # print(f"Blinker Score: {blinker_wheel}\n")
+        # print(f"Average Brake Pressure: {brake_force}\n")
+        # print(f"Brake Peaks counts: {brake_peaks}\n")
 
 
         return abs_lane_dev, speed_means, reaction_times, collision_counts, headway_times, blinker_wheel, brake_force, brake_peaks
