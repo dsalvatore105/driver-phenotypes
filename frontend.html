@@ -1,0 +1,210 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Driver Phenotypes</title>
+
+
+
+
+
+<style>
+body { margin: 0; font-family: sans-serif; }
+#root { display: flex; height: 100vh; }
+
+
+
+.col { border-right: 2px solid #000; padding: 8px; overflow: auto; box-sizing: border-box; flex: none; }
+.col:nth-child(-n+2) { background: #e3e3e3;}
+.col h4 { margin: 0 0 8px; text-align: center; }
+
+
+
+
+.item { border: 1px solid #000; padding: 10px; margin-bottom: 8px; cursor: pointer; background: #bbb; }
+.col:nth-child(3) .item { background: #fff; }
+.col .item.on { background: #fff; font-weight: bold; }
+.col:nth-child(3) .item.on { background: #eee; }
+
+
+
+.item.top { color: #d00; border-color: #d00; }
+.main { flex: 1; overflow: auto; }
+.head { padding: 12px 16px; border-bottom: 1px solid #000; }
+.head p { margin: 8px 0 0; }
+.row { display: flex; }
+
+
+
+.panel { flex: 1; padding: 12px 16px; }
+.panel + .panel { border-left: 1px solid #000; }
+.pct { float: right; color: #d00; font-weight: bold; }
+
+
+svg { width: 100%; height: 180px; border: 1px solid #aaa; }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+
+const { useState, useEffect } =React;
+
+const norm = (ys) => { const m = Math.max(...ys) || 1; return ys.map((y) => y / m); };
+
+
+
+
+const TESTS = {
+  Arthritis: "reaction time, lane drift, and brake pressure",
+  Stroke: "reaction time, speed vs the limit, lane drift, and following distance"
+};
+
+function Chart({ lines, colors, max }) {
+  const w = 300, h = 180;
+  const pts = (ys) => ys.map((y, i) => `${(i / (ys.length - 1)) * w},${h - (y / max) * h}`).join(" ");
+  
+  
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
+      {lines.map((ys, i) => (
+        <polyline key={i} points={pts(ys)} fill="none" stroke={colors[i]} strokeWidth="1.5"/>
+
+
+
+      ))}
+    </svg>
+  );
+}
+
+function App() {
+  const [roster, setRoster] = useState({});
+  const [participant, setParticipant] = useState("");
+  const [drive, setDrive] = useState(1);
+
+
+  const [picked, setPicked] = useState(null);
+  const [real, setReal] = useState(null);
+
+
+
+  const PARTICIPANTS = Object.keys(roster).sort();
+  const DRIVES = roster[participant] || [];
+
+
+
+  useEffect(() => {
+    fetch("/api/participants").then((r) => r.json()).then((d) => { setRoster(d); setParticipant(Object.keys(d).sort()[0]); });
+  }, []);
+  useEffect(() => {
+
+
+
+    if (!participant) return;
+    setReal(null);
+    fetch(`/api/drive/${participant}/${drive}`).then((r) => (r.ok ? r.json() : null)).then(setReal);
+  }, [participant, drive]);
+
+
+
+  const [clusters, setClusters] = useState(null);
+  useEffect(() => {
+
+
+    fetch("/api/clusters").then((r) => r.json()).then(setClusters);
+  }, []);
+
+
+
+  const scores = Object.entries((clusters || {})[participant] || {}).sort((a, b) => b[1] - a[1]);
+
+
+
+  const phenotype = picked || (scores[0] || ["Stroke"])[0];
+
+  const pick = (setter) => (v) => { setter(v); setPicked(null); };
+
+  return (
+    <>
+      <div className="col" style={{ width: 130 }}>
+        <h4>Participant</h4>
+
+
+
+        {PARTICIPANTS.map((p) => (
+          <div key={p} className={"item" + (p === participant ? " on" : "")} onClick={() => pick(setParticipant)(p)}>{p}</div>
+        ))}
+      </div>
+      <div className="col" style={{ width: 90 }}>
+
+
+
+        <h4>Drive #</h4>
+        {DRIVES.map((d) => (
+          <div key={d} className={"item" + (d === drive ? " on" : "")} onClick={() => pick(setDrive)(d)}>{d}</div>
+        ))}
+      </div>
+      <div className="col" style={{ width: 170 }}>
+        <h4>Phenotype</h4>
+        {!clusters && <p>Clustering all drivers...</p>}
+
+
+
+        {scores.map(([name, pct], i) => (
+          <div key={name} className={"item" + (name === phenotype ? " on" : "") + (i === 0 ? " top" : "")} onClick={() => setPicked(name)}>
+            {pct}% {name}
+          </div>
+        ))}
+      </div>
+      <div className="main">
+        <div className="head">
+
+
+
+          <div>Participant {parseInt(participant, 10)} is in the unusual driving group on the <b>{phenotype}</b> test</div>
+          <p>The % is how likely they sit in the smaller of two groups found by clustering all participants.</p>
+        </div>
+        <div className="head">The {phenotype} test looks at {TESTS[phenotype]}.</div>
+
+
+
+        <div className="row">
+          <div className="panel">
+            <span className="pct">{real ? real.bothPct : "..."}%</span>
+            <b>Brake and Accelerator used at the same time</b>
+            {real ? <Chart lines={[norm(real.brake), norm(real.gas)]} colors={["#1f77b4", "#ff7f0e"]} max={1} /> : <p>Loading drive...</p>}
+
+
+
+
+
+
+
+
+
+
+            <p>Moments where the brake and accelerator both have pressure applied at once.</p>
+          </div>
+          <div className="panel">
+            <b>Slow reaction time</b>
+
+            {real ? <Chart lines={[norm(real.reaction)]} colors={["#1f77b4"]} max={1} /> : <p>Loading drive...</p>}
+
+
+            
+            <p>Reaction time getting slower across the duration of the drive.</p>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
