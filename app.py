@@ -3,15 +3,12 @@ from functools import lru_cache
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
 
 
 from flask import Flask, jsonify, send_file
 
 
-from sklearn.mixture import GaussianMixture
-from sklearn.preprocessing import StandardScaler
-
+import cluster
 import comparisons
 
 
@@ -69,13 +66,8 @@ def load_drive(pid, drive):
         "gas": squeeze(df["Accelerator_Pedal_Position"]),
         "reaction": squeeze(df["Reaction_Time"]),
         "bothPct": round(both / len(df) * 100, 1),
+        "minutes": round(len(df) / 3600, 1),
     }
-
-
-TESTS = {
-    "Arthritis": ["reaction_times", "lane_drift", "brake_pressure"],
-    "Stroke": ["reaction_times", "speed_means", "lane_drift", "headway_times"],
-}
 
 
 @lru_cache(maxsize=1)
@@ -92,44 +84,9 @@ def cluster_scores():
 
 
         main.load_data(names, frames, f)
-    lane, speed, react, _, headway, _, brake, *_ = comparisons.calculate_comparisons(frames)
-
-
-
-
-
-    df = pd.DataFrame(
-        {"reaction_times": react, "lane_drift": lane, "brake_pressure": brake, "speed_means": speed, "headway_times": headway},
-        index=pd.Index(names).str.extract(r"Sub_(\d+)_Drive")[0],
-    )
-    df = df.groupby(level=0).mean()
-    df = df.fillna(df.mean())
-    out = {pid: {} for pid in df.index}
-
-
-
-
-    for test, cols in TESTS.items():
-        x = StandardScaler().fit_transform(df[cols])
-
-
-
-
-
-        gmm = GaussianMixture(n_components=2, covariance_type="full", random_state=42, n_init=10).fit(x)
-        odd = np.bincount(gmm.predict(x), minlength=2).argmin()
-
-
-
-
-
-        for pid, p in zip(df.index, gmm.predict_proba(x)[:, odd]):
-            out[pid][test] = round(p * 100)
-
-
-
-
-    return out
+    df = cluster.participant_table(names, frames)
+    scores = {t: cluster.score(df, cols) for t, cols in cluster.TESTS.items()}
+    return {pid: {t: int(s[pid]) for t, s in scores.items()} for pid in df.index}
 
 
 @app.get("/api/clusters")
