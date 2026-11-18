@@ -54,30 +54,41 @@ svg { width: 100%; height: 180px; border: 1px solid #aaa; }
 
 const { useState, useEffect } =React;
 
-const norm = (ys) => { const m = Math.max(...ys) || 1; return ys.map((y) => y / m); };
 
 
 
 
 const TESTS = {
   Arthritis: "reaction time, lane drift, and brake pressure",
-  Stroke: "reaction time, speed vs the limit, lane drift, and following distance"
+  Stroke: "reaction time, speed vs the limit, lane drift, and following distance",
+  "Multiple Sclerosis": "reaction time, lane drift, steering wheel movement, and wheel movement when stopped"
 };
 
-function Chart({ lines, colors, max }) {
+const axis = { display: "flex", flexDirection: "column", justifyContent: "space-between", height: 180, fontSize: 12, padding: "0 4px" };
+const title = { writingMode: "vertical-rl", fontSize: 12, textAlign: "center" };
+
+function Chart({ lines, colors, labels, minutes }) {
   const w = 300, h = 180;
-  const pts = (ys) => ys.map((y, i) => `${(i / (ys.length - 1)) * w},${h - (y / max) * h}`).join(" ");
+  const maxes = lines.map((ys) => Math.max(...ys) || 1);
+  const pts = (ys, m) => ys.map((y, i) => `${(i / (ys.length - 1)) * w},${h - (y / m) * h}`).join(" ");
+  const ticks = (i) => <div style={{ ...axis, color: colors[i] }}><span>{+maxes[i].toFixed(1)}</span><span>0</span></div>;
   
   
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
-      {lines.map((ys, i) => (
-        <polyline key={i} points={pts(ys)} fill="none" stroke={colors[i]} strokeWidth="1.5"/>
-
-
-
-      ))}
-    </svg>
+    <>
+      <div style={{ display: "flex", alignItems: "center" }}>
+        <div style={{ ...title, transform: "rotate(180deg)", color: colors[0] }}>{labels[0]}</div>
+        {ticks(0)}
+        <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" style={{ flex: 1, minWidth: 0 }}>
+          {lines.map((ys, i) => (
+            <polyline key={i} points={pts(ys, maxes[i])} fill="none" stroke={colors[i]} strokeWidth="1.5"/>
+          ))}
+        </svg>
+        {lines[1] && ticks(1)}
+        {lines[1] && <div style={{ ...title, color: colors[1] }}>{labels[1]}</div>}
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, margin: "2px 70px 0" }}><span>0</span><span>Time (minutes)</span><span>{minutes}</span></div>
+    </>
   );
 }
 
@@ -120,7 +131,7 @@ function App() {
 
 
 
-  const scores = Object.entries((clusters || {})[participant] || {}).sort((a, b) => b[1] - a[1]);
+  const scores = Object.entries((clusters || {})[participant] || {}).filter(([n]) => n in TESTS).sort((a, b) => b[1] - a[1]);
 
 
 
@@ -148,7 +159,7 @@ function App() {
           <div key={d} className={"item" + (d === drive ? " on" : "")} onClick={() => pick(setDrive)(d)}>{d}</div>
         ))}
       </div>
-      <div className="col" style={{ width: 170 }}>
+      <div className="col" style={{ width: 230 }}>
         <h4>Phenotype</h4>
         {!clusters && <p>Clustering all drivers...</p>}
 
@@ -174,9 +185,10 @@ function App() {
 
         <div className="row">
           <div className="panel">
-            <span className="pct">{real ? real.bothPct : "..."}%</span>
-            <b>Brake and Accelerator used at the same time</b>
-            {real ? <Chart lines={[norm(real.brake), norm(real.gas)]} colors={["#1f77b4", "#ff7f0e"]} max={1} /> : <p>Loading drive...</p>}
+            <span className="pct">{real ? real.bothPct : "..."}% both pressed</span>
+            <b>Brake and accelerator pressure</b>
+            <div><span style={{ color: "#1f77b4" }}>&#9632; Brake</span> <span style={{ color: "#ff7f0e" }}>&#9632; Accelerator</span></div>
+            {real ? <Chart lines={[real.brake, real.gas]} colors={["#1f77b4", "#ff7f0e"]} labels={["Brake force (newtons)", "Accelerator angle (degrees)"]} minutes={real.minutes} /> : <p>Loading drive...</p>}
 
 
 
@@ -187,16 +199,16 @@ function App() {
 
 
 
-            <p>Moments where the brake and accelerator both have pressure applied at once.</p>
+            <p>The % is how much of the drive both pedals were pressed together.</p>
           </div>
           <div className="panel">
-            <b>Slow reaction time</b>
+            <b>Reaction time</b>
 
-            {real ? <Chart lines={[norm(real.reaction)]} colors={["#1f77b4"]} max={1} /> : <p>Loading drive...</p>}
+            {real ? <Chart lines={[real.reaction]} colors={["#1f77b4"]} labels={["Reaction time (seconds)"]} minutes={real.minutes} /> : <p>Loading drive...</p>}
 
 
             
-            <p>Reaction time getting slower across the duration of the drive.</p>
+            <p>Reaction time over the drive.</p>
           </div>
         </div>
       </div>
